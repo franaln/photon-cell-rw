@@ -1,116 +1,10 @@
 import ROOT
+from array import array
 
-dir_main   = '/eos/atlas/atlascerngroupdisk/perf-egamma/photonID/NTUP_ZLLG/'
-dir_cells  = '/eos/user/f/falonso/data/PhotonID/Cells/Zrad_00-03-01/'
-
-ntuples_mc = [
-    'mc16a_13TeV/00-03-01/mc16a.Sh_224_NN30NNLO_eegamma_LO_pty_7_15.DAOD_EGAM3.e7006_e5984_s3126_r9364_r9315_p3956.root',
-    'mc16a_13TeV/00-03-01/mc16a.Sh_224_NN30NNLO_eegamma_LO_pty_15_35.DAOD_EGAM3.e7006_e5984_s3126_r9364_r9315_p3956.root',
-    'mc16a_13TeV/00-03-01/mc16a.Sh_224_NN30NNLO_eegamma_LO_pty_35_70.DAOD_EGAM3.e7006_e5984_s3126_r9364_r9315_p3956.root',
-    'mc16a_13TeV/00-03-01/mc16a.Sh_224_NN30NNLO_eegamma_LO_pty_70_140.DAOD_EGAM3.e7006_e5984_s3126_r9364_r9315_p3956.root',
-    'mc16a_13TeV/00-03-01/mc16a.Sh_224_NN30NNLO_eegamma_LO_pty_140_E_CMS.DAOD_EGAM3.e7006_e5984_s3126_r9364_r9315_p3956.root',
-]
-
-ntuples_data = [
-    'data15_13TeV/00-03-01/target_data15_Zeeg_p3948.root',
-    'data16_13TeV/00-03-01/target_data16_Zeeg_p3948.root',
-]
-
-cells_mc = [
-    'mc16a_13TeV_366140_DAOD_EGAM3_cells.root',
-    'mc16a_13TeV_366141_DAOD_EGAM3_cells.root',
-    'mc16a_13TeV_366142_DAOD_EGAM3_cells.root',
-    'mc16a_13TeV_366143_DAOD_EGAM3_cells.root',
-    'mc16a_13TeV_366144_DAOD_EGAM3_cells.root',
-]
-
-cells_data = [
-    'data15_13TeV_periodAllYear_DAOD_EGAM3_cells.root',
-    'data16_13TeV_periodAllYear_DAOD_EGAM3_cells.root',
-]
-
-def prepare_trees(tree_main, tree_cell):
-    tree_main.SetBranchStatus("*", 0)
-    tree_cell.SetBranchStatus("*", 0)
-
-    tree_main.SetBranchStatus("EventInfo.eventNumber", 1)
-    tree_cell.SetBranchStatus("EventNumber", 1)
-
-    tree_main.SetBranchStatus("ph.pt", 1)
-    tree_main.SetBranchStatus("ph.eta2", 1)
-    tree_main.SetBranchStatus("mc_weight.gen", 1)
-    tree_main.SetBranchStatus("mc_weight.pu", 1)
-    tree_main.SetBranchStatus("mc_weight.xs", 1)
-    tree_main.SetBranchStatus("ph.noFF_rphi", 1)
-    tree_main.SetBranchStatus("ph.noFF_reta", 1)
-    tree_main.SetBranchStatus("ph.rphi", 1)
-    tree_main.SetBranchStatus("ph.reta", 1)
-
-    tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L1", 1);
-    tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L2", 1);
-    tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L3", 1);
-
-    # tree_cell.SetBranchStatus("ph_ClusterCells_7x11_L1_E", 1);
-    tree_cell.SetBranchStatus("ph_ClusterCells_7x11_L2_E", 1);
-    # tree_cell.SetBranchStatus("ph_ClusterCells_7x11_L3_E", 1);
-
-    tree_cell.BuildIndex('EventNumber')
-    tree_main.AddFriend(tree_cell)
-
-
-def get_entry(tree_main, tree_cell, entry):
-
-    tree_main.GetEntry(entry)
-
-    event_number_main = getattr(tree_main, 'EventInfo.eventNumber')
-            
-    event_number_cells = tree_cell.EventNumber
-    if (event_number_main != event_number_cells):
-        st = tree_cell.GetEntryWithIndex(event_number_main)
-        if st <= 0:
-            return False
-
-    event_number_cells = tree_cell.EventNumber
-    if event_number_main != event_number_cells:
-        return False
-
-    return True
-
-
-def pass_acceptance_cut(event):
-    ph_abseta = abs(getattr(tree_main, 'ph.eta2'))
-    ph_pt = getattr(tree_main, 'ph.pt') * 0.001
-            
-    if ph_abseta > 2.37 or (ph_abseta > 1.37 and ph_abseta < 1.52):
-        return False
-                
-    if ph_pt < 10:
-        return False
-
-    return True
-
-def is_healthy_cluster(event):
-    n_L1 = event.ph_ClusterSize_7x11_L1
-    n_L2 = event.ph_ClusterSize_7x11_L2
-    n_L3 = event.ph_ClusterSize_7x11_L3
-            
-    if n_L1 != 112 or n_L2 != 77 or n_L3 != 44:
-        return False
-
-    cells_E = event.ph_ClusterCells_7x11_L2_E
-
-    maxE, maxE_idx = 0, -1
-    for ic in range(77):
-        cell_E = cells_E.at(ic)
-        if cell_E > maxE:
-            maxE =  cell_E
-            maxE_idx = ic
-
-    if maxE_idx != 38:
-        return False
-
-    return True
-
+def get_L2_eta_phi_cell(idx):
+    cphi = int(idx % 11)
+    ceta = int((idx-cphi) / 11)
+    return ceta, cphi
 
 def sum_L2_energy(eta, phi, clusterEnergy):
 
@@ -145,3 +39,50 @@ def calc_weta2(clusterEnergy, clusterEta):
             sumE_EtaSq +=  a_e * a_eta * a_eta
 
     return math.sqrt( sumE_EtaSq/sumE_3x5 - (sumEEta/sumE3x5)**2)
+
+
+def plot_cells(h, name):
+
+    ROOT.gStyle.SetOptStat(0)
+    ROOT.gStyle.SetTextFont(42)
+
+    stops = array('d', [0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000])
+    r = array('d', [ 70./255., 102./255., 157./255., 188./255., 196./255., 214./255., 223./255., 235./255., 251./255.])
+    g = array('d', [ 37./255.,  29./255.,  25./255.,  37./255.,  67./255.,  91./255., 132./255., 185./255., 251./255.])
+    b = array('d', [ 37./255.,  32./255.,  33./255.,  45./255.,  66./255.,  98./255., 137./255., 187./255., 251./255.])
+    # r = array('d', [ 37./255.,  32./255.,  33./255.,  45./255.,  66./255.,  98./255., 137./255., 187./255., 251./255.])
+    # g = array('d', [ 37./255.,  29./255.,  25./255.,  37./255.,  67./255.,  91./255., 132./255., 185./255., 251./255.])
+    # b = array('d', [ 37./255., 102./255., 157./255., 188./255., 196./255., 214./255., 223./255., 235./255., 251./255.])
+
+    ROOT.TColor.CreateGradientColorTable(len(stops), stops, r, g, b, 999)
+    ROOT.gStyle.SetNumberContours(999)
+    ROOT.TColor.InvertPalette()
+
+    c = ROOT.TCanvas('', '', 800, 800)
+
+    c.SetRightMargin(0.15)
+    c.SetTicks()
+
+    ax = h.GetXaxis()
+    ay = h.GetYaxis()
+
+    nx = h.GetNbinsX()
+    ny = h.GetNbinsY()
+
+    for i in range(1, nx+1):
+        ax.SetBinLabel(i, str(i))
+
+    for i in range(1, ny+1):
+        ay.SetBinLabel(i, str(i))
+
+    ay.SetTitle('Cell (#phi direction)')
+    ax.SetTitle('Cell (#eta direction)')
+
+    h.SetContour(999)
+    # h.GetZaxis().SetRangeUser(0, zmax)
+    h.Draw('colz text')
+
+    c.RedrawAxis()
+
+    c.SaveAs(name)
+
