@@ -81,11 +81,11 @@ def loop(paths_main, paths_cells, is_mc, luminosity, output_name, rw_file=None):
     # Histograms
     h_L2_E_sum  = ROOT.TH1F('h_L2_E_sum', '', 1000, 0, 100000)
 
-    h_L2_E_cell = [ ROOT.TH1F('h_L2_E_cell_%i' % (i+1), '', 5005, -100, 100000) for i in range(77) ]
-    h_L2_e_cell = [ ROOT.TH1F('h_L2_e_cell_%i' % (i+1), '', 200, -1, 1) for i in range(77) ]
-
     h_L2_E_profile = ROOT.TProfile2D('h_L2_E_profile', '', 7, 0, 7, 11, 0, 11)
     h_L2_e_profile = ROOT.TProfile2D('h_L2_e_profile', '', 7, 0, 7, 11, 0, 11)
+
+    h_L2_E_cell = [ ROOT.TH1F('h_L2_E_cell_%i' % (i+1), '', 5005, -100, 100000) for i in range(77) ]
+    h_L2_e_cell = [ ROOT.TH1F('h_L2_e_cell_%i' % (i+1), '', 110, -0.1, 1) for i in range(77) ]
 
     h_Rphi_ntuple  = ROOT.TH1F('h_Rphi_ntuple', '', 100, 0, 1)
     h_Reta_ntuple  = ROOT.TH1F('h_Reta_ntuple', '', 100, 0, 1)
@@ -102,6 +102,9 @@ def loop(paths_main, paths_cells, is_mc, luminosity, output_name, rw_file=None):
 
         h_L2_E_profile_rw = ROOT.TProfile2D('h_L2_E_profile_rw', '', 7, 0, 7, 11, 0, 11)
         h_L2_e_profile_rw = ROOT.TProfile2D('h_L2_e_profile_rw', '', 7, 0, 7, 11, 0, 11)
+
+        h_L2_E_cell_rw = [ ROOT.TH1F('h_L2_E_cell_%i_rw' % (i+1), '', 5005, -100, 100000) for i in range(77) ]
+        h_L2_e_cell_rw = [ ROOT.TH1F('h_L2_e_cell_%i_rw' % (i+1), '', 110, -0.1, 1) for i in range(77) ]
         
         h_Rphi_rw  = ROOT.TH1F('h_Rphi_rw', '', 100, 0, 1)
         h_Reta_rw  = ROOT.TH1F('h_Reta_rw', '', 100, 0, 1)
@@ -145,9 +148,9 @@ def loop(paths_main, paths_cells, is_mc, luminosity, output_name, rw_file=None):
         tree_main.SetBranchStatus("ph.rphi", 1)
         tree_main.SetBranchStatus("ph.reta", 1)
 
-        tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L1", 1);
+        # tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L1", 1);
         tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L2", 1);
-        tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L3", 1);
+        # tree_cell.SetBranchStatus("ph_ClusterSize_7x11_L3", 1);
 
         # tree_cell.SetBranchStatus("ph_ClusterCells_7x11_L1_E", 1);
         tree_cell.SetBranchStatus("ph_ClusterCells_7x11_L2_E", 1);
@@ -235,6 +238,7 @@ def loop(paths_main, paths_cells, is_mc, luminosity, output_name, rw_file=None):
                 h_Rphi_ntuple.Fill(getattr(tree_main, 'ph.rphi'), weight)
                 h_Reta_ntuple.Fill(getattr(tree_main, 'ph.reta'), weight)
 
+            # RW
             if do_rw:
 
                 # correct cells
@@ -267,6 +271,9 @@ def loop(paths_main, paths_cells, is_mc, luminosity, output_name, rw_file=None):
                 for ic in range(77):
                     cell_E = cells_E_rw.at(ic)
                     cell_E_norm = cell_E / sumE
+
+                    h_L2_E_cell_rw[ic].Fill(cell_E, weight)
+                    h_L2_e_cell_rw[ic].Fill(cell_E_norm, weight)
 
                     ceta, cphi = get_L2_eta_phi_cell(ic)
 
@@ -302,6 +309,10 @@ def loop(paths_main, paths_cells, is_mc, luminosity, output_name, rw_file=None):
         h_L2_E_sum_rw.Write()
         h_L2_E_profile_rw.Write()
         h_L2_e_profile_rw.Write()
+
+        for i in range(77):
+            h_L2_E_cell_rw[i].Write()
+            h_L2_e_cell_rw[i].Write()
 
         h_Rphi_rw.Write()
         h_Reta_rw.Write()

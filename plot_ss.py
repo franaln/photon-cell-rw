@@ -26,8 +26,8 @@ for variable in ('Rphi', 'Reta'):
     h_data_ss.SetMarkerColor(ROOT.kBlack)
     h_data_ss.SetLineColor(ROOT.kBlack)
 
-    h_mc_ss.SetLineColor(ROOT.TColor.GetColor('#A60628'))
-    h_mc_ss_rw.SetLineColor(ROOT.TColor.GetColor('#348ABD'))
+    h_mc_ss.SetLineColor(ROOT.TColor.GetColor('#FF2545'))
+    h_mc_ss_rw.SetLineColor(ROOT.TColor.GetColor('#3F5BFF'))
 
     h_mc_ss.SetLineWidth(2)    
     h_mc_ss_rw.SetLineWidth(2)
@@ -37,7 +37,7 @@ for variable in ('Rphi', 'Reta'):
 
     # h_mc_ss_ntuple.SetLineColor(ROOT.kRed)
     # h_mc_ss_ntuple.SetLineStyle(2)
-    h_mc_ss_ntuple_fudged.SetLineColor(ROOT.TColor.GetColor('#E24A33'))
+    h_mc_ss_ntuple_fudged.SetLineColor(ROOT.TColor.GetColor('#F19200'))
     h_mc_ss_ntuple_fudged.SetLineStyle(2)
     h_mc_ss_ntuple_fudged.SetLineWidth(2)
 
@@ -118,9 +118,9 @@ for variable in ('Rphi', 'Reta'):
     r_mc.GetYaxis().SetTitle('MC/Data')
     r_mc.GetYaxis().CenterTitle()
 
-    r_mc.GetXaxis().SetRangeUser(0.5, 1) ##xranges[variable][0], xranges[variable][1])
+    r_mc.GetXaxis().SetRangeUser(0.8, 1) ##xranges[variable][0], xranges[variable][1])
     r_mc.GetYaxis().SetNdivisions(504)
-    r_mc.GetYaxis().SetRangeUser(0.2, 1.8)
+    r_mc.GetYaxis().SetRangeUser(0.4, 1.6)
 
     r_mc.GetXaxis().SetLabelFont(43)
     r_mc.GetXaxis().SetLabelSize(18)
