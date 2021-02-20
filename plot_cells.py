@@ -3,7 +3,7 @@ import ROOT
 f_d = ROOT.TFile.Open('output_data.root')
 f_m = ROOT.TFile.Open('output_mc_rw.root')
 
-for cell in range(38, 41):
+for cell in range(1, 78):
 
     h_data  = f_d.Get('h_L2_e_cell_%i' % cell)
     h_mc    = f_m.Get('h_L2_e_cell_%i' % cell)
