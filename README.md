@@ -1,14 +1,14 @@
 Photon Cell RW
 ==============
 
-1. Create data and MC profiles:
+* Create data and MC profiles:
 
-python do_cells_profile.py
+`python do_cells_profile.py`
 
-2. Compute correction weights
+* Compute correction weights
 
-python calc_rw.py
+`python calc_rw.py`
 
-3. Reweight MC cells
+* Re-weight MC cells
 
-python do_cells_profile.py rw.root
+`python do_cells_profile.py rw.root`
